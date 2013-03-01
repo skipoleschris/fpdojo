@@ -1,0 +1,64 @@
+Immutability
+============
+
+*** Introduce the REPL ***
+
+Live coding in the repl.....
+
+(1 to 10).toSet
+res0 - 8
+res0
+
+case class Person(name: String, age: Int)
+Person("Chris", 39)
+res2.copy(age = 40)
+res2
+
+
+Pure and Impure Code
+====================
+
+File: pureimpure.scala
+File: pureimpure.hs
+
+
+Pattern Matching and Recursion
+==============================
+
+File: PairSumming.scala
+
+
+Higher Order Functions
+======================
+
+Live coding in the repl.....
+
+(1 to 10).toList
+res0 map (_ * 2)
+res0 map (x => x * x)
+res0 filter (_ % 2 == 0)
+
+def isEven(i: Int) = i % 2 == 0
+res0 filter isEven
+
+def multiplyBy(i: Int): Int => Int = { x => x * i }
+multiplyBy(3)
+res2(5)
+res0 map multiplyBy(3)
+
+Composition
+===========
+
+Live coding in the repl....
+
+def isVowel(ch: Char) = ch == 'a' || ch == 'e' || ch =='i' || ch == 'o' || ch == 'u'
+
+def onlyVowels(s: String) = s filter isVowel
+
+def hasLength(l: Int): String => Boolean = (_.length == l)
+
+onlyVowels _ andThen hasLength(2)
+
+List("The", "quick", "brown", "fox", "jumps", "over", "the", "lazy", "dog") filter res23
+
+
