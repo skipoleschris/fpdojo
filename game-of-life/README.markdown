@@ -25,3 +25,5 @@ The game reads the file life.txt and uses this to create the initial universe. I
 
 Also included in the directory is a file called InitialVersion.scala. This is the first draft of the solution that was then refactored into the final game. This is useful as it shows some of the evolution in the thinking of the logic. In particular you can see how the solution evolved from holding a full gird of Boolean values to just holding the positions that were alive. You can also see all of the unecessary for comprehensions and creation of thousands of Position tuples that was eliminated in the improved design. The initial version also does not include seeding from the text file (you have to manually build the initial universe).
 
+Additionally there is file called GameOfCake.scala that refactors the same solution using some advanced concepts of the cake pattern. Probably overkill for such a simple solution, but clearly demonstrates how to separate out generic concepts from a concrete implementation fo the game of life in 2 dimensions. A challenge for the reads is to implement a three dimensional version.
+
