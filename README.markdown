@@ -12,3 +12,7 @@ This directory contains the introductionary presentation, example code and notes
 
 The subject of the first dojo, this is a Scala implementation of Conway's Game of Life. See the README file in the directory for full details of the contents and solution.
 
+## Connect4
+
+An ongoing dojo project to build a RESTful implementation of the Connect4 game as a 2-player server and then create multiple clients in different languages and play them against each other.
+
