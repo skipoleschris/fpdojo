@@ -31,8 +31,8 @@ trait ThreeDimensionsModule extends GameEngineModule {
 
     def universeFrom(size: Dimension, lifeAt: Set[Position]): Universe = Universe(size, lifeAt)
 
-    protected def stayAlive(count: Int): Boolean = count >= 4 && count <= 10
-    protected def beReborn(count: Int): Boolean = count >= 8 && count <= 10
+    protected def stayAlive(count: Int): Boolean = count >= 7 && count <= 10
+    protected def beReborn(count: Int): Boolean = count >= 4 && count <= 5
   }
 
   trait ThreeDimensionsUIModule extends UIModule with ThreeDimensionsModule {
