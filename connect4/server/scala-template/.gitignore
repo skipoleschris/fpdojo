@@ -1,0 +1,7 @@
+.DS_Store
+target
+project/boot
+project/target
+.ensime
+.ensime_port
+
