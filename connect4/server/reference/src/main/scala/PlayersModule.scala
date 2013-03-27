@@ -6,6 +6,7 @@ trait PlayersModule extends GameModule {
   type PlayerId = String
 
   sealed trait GameResponse
+  case class CreditsResponse(credits: String) extends GameResponse
   case class ErrorResponse(code: ErrorCode) extends GameResponse
   case class StartedResponse(id: Long) extends GameResponse
   case class RegisteredResponse(playerId: PlayerId, colour: Colour) extends GameResponse
@@ -16,6 +17,7 @@ trait PlayersModule extends GameModule {
     def !(response: GameResponse): Unit
   }
 
+  def showCredits(respond: RespondHandler): Unit
   def startGame(respond: RespondHandler): Unit
   def registerPlayer(id: Long, respond: RespondHandler): Unit
   def checkStatus(id: Long, playerId: PlayerId, respond: RespondHandler): Unit
@@ -30,6 +32,9 @@ trait ActorBasedPlayersModule extends PlayersModule {
   import akka.actor.ActorRef
   import akka.actor.ActorSystem
   import akka.actor.Props
+
+  def showCredits(respond: RespondHandler): Unit =
+    actors.connect4 ! ShowCreditsEvent(respond)
 
   def startGame(respond: RespondHandler): Unit =
     actors.connect4 ! NewGameEvent(respond)
@@ -46,12 +51,13 @@ trait ActorBasedPlayersModule extends PlayersModule {
   def endGames(): Unit = actors.shutdown()
 
   private object actors {
-    val actorSystem = ActorSystem("connect4")
-    val connect4 = actorSystem.actorOf(Props(new GameStartupActor()), name = "Connect4")
-    val unknownGame = actorSystem.actorOf(Props(new UnknownGameActor()), name = "Connect4_UnknownGame")
- 
+    private val factory = actorSystemFactory
+    val actorSystem = factory.actorSystem
+    val connect4 = factory.connect4
+    val unknownGame = factory.unknownGame
+    def newGame(id: Long) = factory.createNewGameActor(id)
     def game(id: Long) = {
-      val gameActor = actorSystem.actorFor(s"/user/Connect4_Game_${id}")
+      val gameActor = factory.lookupGame(id)
       if ( gameActor.isTerminated ) unknownGame
       else gameActor
     }
@@ -59,32 +65,51 @@ trait ActorBasedPlayersModule extends PlayersModule {
     def shutdown(): Unit = actorSystem.shutdown()
   }
 
+  protected trait ActorSystemFactory {
+    def actorSystem: ActorSystem
+    def connect4: ActorRef
+    def unknownGame: ActorRef
+    def createNewGameActor(id: Long): ActorRef
+    def lookupGame(id: Long): ActorRef
+  } 
+
+  protected def actorSystemFactory = new ActorSystemFactory {
+    val actorSystem = ActorSystem("connect4")
+    val connect4 = actorSystem.actorOf(Props(new GameStartupActor()), name = "Connect4")
+    val unknownGame = actorSystem.actorOf(Props(new UnknownGameActor()), name = "Connect4_UnknownGame")
+    def createNewGameActor(id: Long) = actorSystem.actorOf(Props(new Connect4Actor(id)), name = s"Connect4_Game_${id}")
+    def lookupGame(id: Long) = actorSystem.actorFor(s"/user/Connect4_Game_${id}")
+  }
+
   private abstract class GameEvent {
     def respond: RespondHandler
   }
+  private case class ShowCreditsEvent(respond: RespondHandler) extends GameEvent
   private case class NewGameEvent(respond: RespondHandler) extends GameEvent
   private case class RegisterEvent(respond: RespondHandler) extends GameEvent  
   private case class CheckReady(playerId: PlayerId, respond: RespondHandler) extends GameEvent
   private case class PlacePiece(playerId: PlayerId, column: Int, respond: RespondHandler) extends GameEvent
 
-  private class GameStartupActor extends Actor {
+  protected class GameStartupActor extends Actor {
     private var lastGameId: Long = 0
 
     def receive = {
+      case ShowCreditsEvent(respond) =>
+        respond ! CreditsResponse(credits)
       case NewGameEvent(respond) =>
         lastGameId = lastGameId + 1
-        actors.actorSystem.actorOf(Props(new Connect4Actor(lastGameId)), name = s"Connect4_Game_${lastGameId}")
+        actors.newGame(lastGameId)
         respond ! StartedResponse(lastGameId)
     }
   }
 
-  private class UnknownGameActor extends Actor {
+  protected class UnknownGameActor extends Actor {
     def receive = {
       case event: GameEvent => event.respond ! ErrorResponse(UnknownGame)
     }
   }
 
-  private class Connect4Actor(id: Long) extends Actor {
+  protected class Connect4Actor(id: Long) extends Actor {
     import context._
 
     def receive = awaitFirstRegistration

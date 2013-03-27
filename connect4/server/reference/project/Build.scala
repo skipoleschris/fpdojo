@@ -41,8 +41,9 @@ object Dependencies {
   // Testing Libraries
 
   val specs2 = "org.specs2" %% "specs2" % "1.13" % "test"
-  val scalaCheck = "org.scalacheck" %% "scalacheck" % "1.10.0" % "compile"
-  val testing = Seq(specs2, scalaCheck)
+  val scalaCheck = "org.scalacheck" %% "scalacheck" % "1.10.0" % "test"
+  val akkaTestKit = "com.typesafe.akka" %% "akka-testkit" % "2.1.0" % "test"
+  val testing = Seq(specs2, scalaCheck, akkaTestKit)
 
   // Dependency groups
   val coreDeps = actors ++ unfiltered ++ utilities ++ functional ++ testing

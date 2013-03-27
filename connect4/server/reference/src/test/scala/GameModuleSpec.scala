@@ -10,6 +10,9 @@ class GameModuleSpec extends Specification with ScalaCheck with GameModule { def
 
   "Specification for the Connect4 Game Module that encodes the game state and rules"  ^
                                                                                       endp^
+  "Retrieving the credits should"                                                     ^
+    "return the credit string"                                                        ! checkCredits^
+                                                                                      endp^
   "Setting up a new game should"                                                      ^
     "create a game events object with an empty sequence of events"                    ! createGameEvents^
                                                                                       endp^
@@ -30,6 +33,9 @@ class GameModuleSpec extends Specification with ScalaCheck with GameModule { def
   private val allColumnsFullGame = Gen.value(gameEventsForAllColumnsFull)
   private val emptyGame = Gen.value(gameEventsForEmptyGame)
 
+  def checkCredits = {
+    credits must_== "Connect4 Server. (c)2013 Equal Experts Limited. All Rights Reserved."
+  }
 
   def createGameEvents = {
     game.create must_== GameEvents[RedPiece.type](Nil)

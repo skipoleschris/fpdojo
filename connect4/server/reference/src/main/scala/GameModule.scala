@@ -2,6 +2,8 @@ package com.equalexperts.connect4
 
 trait GameModule {
 
+  var credits = "Connect4 Server. (c)2013 Equal Experts Limited. All Rights Reserved."
+
   sealed trait Colour { def describe: String }
   trait Red extends Colour { val describe = "red" }
   trait Yellow extends Colour { val describe = "yellow" }

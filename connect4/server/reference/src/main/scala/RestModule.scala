@@ -10,7 +10,7 @@ trait RestModule extends PlayersModule {
   object Connect4Plan extends async.Plan with ServerErrorResponse {
     def intent = {
       case request @ Path(Seg("connect4" :: "ping" :: Nil)) =>
-        get(request, controller.pong)
+        get(request, controller.ping)
       case request @ Path(Seg("connect4" :: "game" :: "create" :: Nil)) =>
         post(request, controller.handleCreateGame)
       case request @ Path(Seg("connect4" :: "game" :: id :: "register" :: Nil)) =>
@@ -34,13 +34,24 @@ trait RestModule extends PlayersModule {
 
   def shutdown() = endGames()
 
-  private object controller {
+  protected trait Controller {
+    def ping[A](req: Async.Responder[A]): Unit
+    def notAllowed[A](req: Async.Responder[A]): Unit
+    def handleCreateGame[A](req: Async.Responder[A]): Unit
+    def handleRegisterPlayer[A](gameId: String)(req: Async.Responder[A]): Unit
+    def handleCheckStatus[A](gameId: String, playerId: String)(req: Async.Responder[A]): Unit
+    def handlePlacePiece[A](gameId: String, playerId: String, column: String)(req: Async.Responder[A]): Unit
+  }
+
+  protected def controller: Controller = DefaultController
+
+  protected object DefaultController extends Controller {
     import scala.language.implicitConversions
     import scala.util.Try
 
-    implicit def responderToResponseHandler[A](req: Async.Responder[A]) = new JsonResponseHandler(req)
+    private implicit def responderToResponseHandler[A](req: Async.Responder[A]) = new JsonResponseHandler(req)
     
-    def pong[A](req: Async.Responder[A]) = req respond (Ok ~> ResponseString("pong"))
+    def ping[A](req: Async.Responder[A]) = showCredits(req)
 
     def notAllowed[A](req: Async.Responder[A]) = req respond MethodNotAllowed
 
@@ -70,6 +81,7 @@ trait RestModule extends PlayersModule {
 
     def !(response: GameResponse): Unit = Future {
       response match {
+        case CreditsResponse(credits) => sendCredits(credits)
         case ErrorResponse(code) => sendError(code)
         case StartedResponse(id) => sendStarted(id)
         case RegisteredResponse(playerId, colour) => sendRegistered(playerId, colour)
@@ -77,6 +89,9 @@ trait RestModule extends PlayersModule {
         case PlaceResponse(grid, winningMove) => sendPlaceResult(grid, winningMove)
       }
     }
+
+    private def sendCredits(credits: String) = 
+      req respond (Ok ~> Json(("credits" -> credits)))
 
     private def sendError(code: ErrorCode) = 
       req respond (BadRequest ~> Json(("error" -> ("code" -> code.toString))))

@@ -14,13 +14,13 @@ This will start the server on port 8081. You can optionally pass a string parame
 
 The REST api supports the following behaviour:
 
-#### Ping/Pong
+#### Ping
 
 Check the server is working:
 
     GET: /connect4/ping
 
-Returns the value pong as a text document.
+Returns some credits in a Json document.
 
 #### Create Game
 
@@ -116,7 +116,7 @@ Implements the registration and the ability for players to alternatively place p
 
 Implements the RESTful interface. Uses asynchronous processing and futures for generating the responses so as not to block the players module.
 
-##### Connect4Server
+#### Connect4Server
 
 Starts an in-memory Netty server and configures it with the REST module and Akka actor based players module. Server can be stopped at any time by pressing a key.
 
