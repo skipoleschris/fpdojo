@@ -9,12 +9,16 @@ import java.io.ByteArrayOutputStream
 import java.util.concurrent.CountDownLatch
 
 class TestResponder extends Async.Responder[Any] { 
+  private val latch = new CountDownLatch(1)
+
   val response = new TestHttpResponse()
-  val latch = new CountDownLatch(1)
+
   def respond(rf: ResponseFunction[Any]): Unit = {
     rf(response)
     latch.countDown()
   }
+
+  def awaitResponse = latch.await()
 }
 
 class TestHttpResponse extends HttpResponse[Any] {
@@ -39,4 +43,18 @@ class TestHttpResponse extends HttpResponse[Any] {
   def header(name: String) = sentHeaders(name)
   def headerNames = sentHeaders.keysIterator
   def cookies = sentCookies
+}
+
+trait Hosted {
+  import unfiltered.netty._
+  import unfiltered.util.Port
+
+  val port = unfiltered.util.Port.any
+  private var server: Http = _
+
+  def startServer(plan: async.Plan) = {
+    server = Http(port).plan(plan).start()
+  }
+  
+  def shutdownServer() = server.stop()
 }
